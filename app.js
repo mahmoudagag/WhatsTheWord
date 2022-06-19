@@ -118,8 +118,11 @@ io.on('connection', socket => {
     socket.on('game-started',() => {
         // in to include sender
         let room = players[socket.id]
-        rooms[room].isplaying = true
-        io.sockets.in(players[socket.id]).emit('game-started', rooms[room])
+        if(rooms[room]){
+            rooms[room].isplaying = true
+            io.sockets.in(players[socket.id]).emit('game-started', rooms[room])
+        }
+
     })
 
     socket.on('update-word',(word) => {
