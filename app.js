@@ -24,6 +24,9 @@ app.use(express.static(path.join(__dirname,'build')))
 app.get('/',(req,res) =>{
     res.sendFile(path.join(_dirname,'build','index.html'))
 })
+
+
+
 // app.use('/image/:image', (req,res) =>{
 //     const {image} = req.params
 //     console.log(image)
@@ -150,9 +153,15 @@ io.on('connection', socket => {
         if (room && rooms[room].isplaying){
             rooms[room].players.map( (player) => {
                 if (player.name === username ){
-                    player.lives -= 1
+                    if(player.lives != 0){
+                        player.lives -= 1
+                    }
+                    else {
+                        return 
+                    }
                 }
             })
+            console.log(rooms[room])
             if( isGameOver(rooms[room].players) ){
                 let winner = findWinner(rooms[room].players)
                 resetGame(rooms[room])
