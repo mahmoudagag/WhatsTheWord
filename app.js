@@ -131,48 +131,81 @@ io.on('connection', socket => {
         socket.to(room).emit('new-word', word)
     })
 
-    socket.on("next-player", ()=>{
-        let room = players[socket.id]
+    // socket.on("next-player", ()=>{
+    //     let room = players[socket.id]
         
-        if( isGameOver(rooms[room].players) ){
-            let winner = findWinner(rooms[room].players)
-            resetGame(rooms[room])
-            io.sockets.in(room).emit("game-over",rooms[room],winner)
-        }else{
-            let curr = rooms[room].current
-            let newCurrent = (curr+1) % rooms[room].players.length
-            let val = findNextPlayer(curr,newCurrent, rooms[room].players)
+    //     if( isGameOver(rooms[room].players) ){
+    //         let winner = findWinner(rooms[room].players)
+    //         resetGame(rooms[room])
+    //         io.sockets.in(room).emit("game-over",rooms[room],winner)
+    //     }else{
+    //         let curr = rooms[room].current
+    //         let val = findNextPlayer(curr, rooms[room].players)
     
-            rooms[room].current = val
-            rooms[room].turn += 1
-            rooms[room].letters = randomLetters()
-            io.sockets.in(room).emit("next-player",rooms[room])
-        }
-    })    
+    //         rooms[room].current = val
+    //         rooms[room].turn += 1
+    //         rooms[room].letters = randomLetters()
+    //         io.sockets.in(room).emit("next-player",rooms[room])
+    //     }
+    // })    
 
-    socket.on('wrong',(username) => {
+    // socket.on('wrong',(username) => {
+    //     let id = socket.id 
+    //     let room = players[id]
+    //     console.log(username)
+    //     if (room && rooms[room].isplaying){
+    //         rooms[room].players.forEach( (player) => {
+    //             if (player.name === username ){
+    //                 if(player.lives != 0){
+    //                     player.lives -= 1
+    //                 }
+    //                 else {
+    //                     return 
+    //                 }
+    //             }
+    //         })
+    //         if( isGameOver(rooms[room].players) ){
+    //             let winner = findWinner(rooms[room].players)
+    //             resetGame(rooms[room])
+    //             io.sockets.in(room).emit("game-over",rooms[room],winner)
+    //         }else{
+    //             let curr = rooms[room].current
+    //             let val = findNextPlayer(curr, rooms[room].players)
+        
+    //             rooms[room].current = val
+    //             rooms[room].turn += 1
+    //             rooms[room].letters = randomLetters()
+    //             io.sockets.in(room).emit("next-player",rooms[room])
+    //         }
+    //     }
+    // })
+    socket.on('next-player',(username,turn,status) => {
         let id = socket.id 
         let room = players[id]
-        if (room && rooms[room].isplaying){
-            rooms[room].players.map( (player) => {
-                if (player.name === username ){
-                    if(player.lives != 0){
-                        player.lives -= 1
+        if(room && rooms[room].isplaying){
+            if(status == 'wrong' && rooms[room].turn != turn ){
+                return 
+            }
+            if(status == 'wrong' && rooms[room].turn == turn){
+                rooms[room].players.forEach( (player) => {
+                    if (player.name === username ){
+                        if(player.lives != 0){
+                            player.lives -= 1
+                        }
+                        else {
+                            return 
+                        }
                     }
-                    else {
-                        return 
-                    }
-                }
-            })
-            console.log(rooms[room])
+                })
+            }
             if( isGameOver(rooms[room].players) ){
                 let winner = findWinner(rooms[room].players)
                 resetGame(rooms[room])
                 io.sockets.in(room).emit("game-over",rooms[room],winner)
             }else{
                 let curr = rooms[room].current
-                let newCurrent = (curr+1) % rooms[room].players.length
-                let val = findNextPlayer(curr,newCurrent, rooms[room].players)
+                
+                let val = findNextPlayer(curr, rooms[room].players)
         
                 rooms[room].current = val
                 rooms[room].turn += 1
@@ -181,7 +214,6 @@ io.on('connection', socket => {
             }
         }
     })
-
     socket.on('disconnect', () => {
         let id = socket.id 
         let room = players[id]
@@ -195,9 +227,7 @@ io.on('connection', socket => {
                 let curr = rooms[room].current
                 //in game
                 if(rooms[room].isplaying && rooms[room].players[curr].socket === id){ //rooms[room].turn
-
-                    let newCurrent = (curr+1) % rooms[room].players.length
-                    let val = findNextPlayer(curr,newCurrent, rooms[room].players)
+                    let val = findNextPlayer(curr, rooms[room].players)
     
                     rooms[room].players = rooms[room].players.filter( (player) => player.socket != id)
                     socket.to(room).emit('users-changed',rooms[room])
@@ -243,7 +273,8 @@ function resetGame(room){
     console.log(room)
 
 }
-function findNextPlayer(curr,newCurrent,players){
+function findNextPlayer(curr,players){
+    let newCurrent = (curr+1) % players.length
     while( curr !== newCurrent){
         if(players[newCurrent].lives > 0){
             return newCurrent
