@@ -10,8 +10,7 @@ const path = require('path')
 
 
 app.use(express.json())
-// app.use('/',express.static('public/Home'))
-// app.use('/lobby',express.static('public/Lobby'))
+
 app.use(cors())
 const io = require("socket.io")(server,{
     cors:{
@@ -25,24 +24,6 @@ app.get('/',(req,res) =>{
     res.sendFile(path.join(_dirname,'build','index.html'))
 })
 
-
-
-// app.use('/image/:image', (req,res) =>{
-//     const {image} = req.params
-//     console.log(image)
-//     let filePath = `./images/${image}`
-
-//     res.writeHead(200, {
-//         "Content-Type": "image/png" });
-//     fs.readFile(filePath, (err,content) =>{
-//         console.log(content)
-//         res.end(content)
-//     })
-//     //res.end(`./images/${image}`)
-//     //express.static(`./images/${image}`)
-// })
-
-
 const port = process.env.PORT || 5000;
 
 const start = async() =>{
@@ -51,15 +32,6 @@ const start = async() =>{
     })
 }
 
-
-
-
-
-
-
-
-
-//start()
 const letters = []
 let n
 fs.createReadStream('letters.csv')
@@ -69,8 +41,7 @@ fs.createReadStream('letters.csv')
         n = letters.length
         start()
     })
-// const images = ['canada-geese-g266419316_1280.jpg', 'caterpillar-gf37206640_1280.jpg', 'cows-g6608a5c45_1280.jpg', 'dipsacus-gcf58556f3_1280.jpg', 'drake-g36e7e01d5_1280.jpg', 'eurasian-pygmy-owl-g79f8ef298_1280.jpg', 'hd-wallpaper-g6995a3577_1280.jpg', 'horse-g4e03f07a1_1280.jpg', 'insect-g9b1cccff7_1280.jpg', 'leopard-g2aa3d5791_1280.jpg', 'lizard-g9ec14629d_1280.jpg', 'lynx-gefba62a5c_1280.jpg', 'mute-swan-g1975bab44_1280.jpg', 'parakeet-g92c8dd0c1_1280.jpg', 'pfrungener-ried-g0acb13154_1280.jpg', 'pigeon-g6825c1be2_1280.jpg', 'rabbit-g789bf84d4_1280.jpg', 'snail-ga8f018547_1280.jpg', 'snail-ge20bc808b_1280.jpg', 'sparrow-gf0373ddeb_1280.jpg', 'tiger-g9cd38e341_1280.jpg', 'topi-gca358ce70_1280.jpg', 'western-jackdaw-gcd29525ac_1280.jpg', 'white-heron-gbc85751eb_1280.jpg']
-// const imageN = images.length
+
 const rooms = {}
 const players = {}
 io.on('connection', socket => {
@@ -131,54 +102,7 @@ io.on('connection', socket => {
         socket.to(room).emit('new-word', word)
     })
 
-    // socket.on("next-player", ()=>{
-    //     let room = players[socket.id]
-        
-    //     if( isGameOver(rooms[room].players) ){
-    //         let winner = findWinner(rooms[room].players)
-    //         resetGame(rooms[room])
-    //         io.sockets.in(room).emit("game-over",rooms[room],winner)
-    //     }else{
-    //         let curr = rooms[room].current
-    //         let val = findNextPlayer(curr, rooms[room].players)
-    
-    //         rooms[room].current = val
-    //         rooms[room].turn += 1
-    //         rooms[room].letters = randomLetters()
-    //         io.sockets.in(room).emit("next-player",rooms[room])
-    //     }
-    // })    
 
-    // socket.on('wrong',(username) => {
-    //     let id = socket.id 
-    //     let room = players[id]
-    //     console.log(username)
-    //     if (room && rooms[room].isplaying){
-    //         rooms[room].players.forEach( (player) => {
-    //             if (player.name === username ){
-    //                 if(player.lives != 0){
-    //                     player.lives -= 1
-    //                 }
-    //                 else {
-    //                     return 
-    //                 }
-    //             }
-    //         })
-    //         if( isGameOver(rooms[room].players) ){
-    //             let winner = findWinner(rooms[room].players)
-    //             resetGame(rooms[room])
-    //             io.sockets.in(room).emit("game-over",rooms[room],winner)
-    //         }else{
-    //             let curr = rooms[room].current
-    //             let val = findNextPlayer(curr, rooms[room].players)
-        
-    //             rooms[room].current = val
-    //             rooms[room].turn += 1
-    //             rooms[room].letters = randomLetters()
-    //             io.sockets.in(room).emit("next-player",rooms[room])
-    //         }
-    //     }
-    // })
     socket.on('next-player',(username,turn,status) => {
         let id = socket.id 
         let room = players[id]
@@ -258,10 +182,7 @@ function randomLetters(){
     let i = Math.floor(Math.random() * n);
     return letters[i]
 }
-// function randomImage(){
-//     let i = Math.floor(Math.random() * imageN);
-//     return images[i]
-// }
+
 
 function resetGame(room){
     room.current = 0
@@ -305,19 +226,3 @@ function findWinner(players){
     }
 }
 
-// io.on("connection", socket => {
-//     console.log(socket.id)
-//     socket.on('message', (data,room) => {
-//         console.log(room)
-//         if(room === ''){
-//             // broadcast sends to everyone but your self
-//             socket.broadcast.emit('message',data)
-//         }else{
-//             socket.to(room).emit('message',data)
-//         }
-//     })
-//     socket.on('join-room', room => {
-//         socket.join(room)
-//         console.log(room)
-//     })
-// })
